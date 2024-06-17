@@ -1,0 +1,98 @@
+﻿@page "/machines"
+
+@rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+
+
+<h3>Machines</h3>
+<br />
+<br />
+<div class="container-fluid text-center">
+    <div class="row w-55">
+        @foreach (var city in cities)
+        {
+            <div class="col">
+                <div class="card @(selectedCity.Equals(city, StringComparison.OrdinalIgnoreCase)? "border-primary" : "")">
+                    <button type="button" class="btn btn-primary" @onclick="@(() => {SelectCity(city);})">@city</button>
+                   @*  <img src="@( $"/images/{city}.png" )" class="card-img-top" alt="..."> *@
+               @*  <div class="card-body"></div>  *@
+                </div>
+
+            </div>
+        }
+    </div>
+</div>
+<br />
+<div class="input-group mb-3">
+    <input type="text" class="form-control" placeholder="Search Machines"
+    @bind-value="machineFilter"
+    @bind-value:event="oninput" />
+    <button class="btn btn-outline-secondary" type="button" id="button-search" @onclick="HandleSearch">Search</button>
+</div>
+<ul class="machineList">
+    @foreach (var machine in machines)
+    {
+        <li class="machineList" @key="machine.MachineId">
+            <span class="machine-info">
+                @machine.Name in @machine.City is
+                <span style="color:@((machine.IsOnline ? "green" : "red"))">
+                    @(machine.IsOnline ? "online" : "offline")>
+                </span>
+            </span>
+            <a href="/machines/@machine.MachineId" class="btn btn-link">Edit</a>
+           
+            <EditForm Model="machine"
+                      FormName="@($"form-machine-{machine.MachineId}")"
+                      OnValidSubmit="@(() => { DeleteMachine(machine.MachineId);})">
+                <button type="submit" class="btn-danger">Delete</button>
+            </EditForm>
+        </li>
+    }
+</ul>
+<p>
+    <a href="/machines/add" class="btn btn-primary">Add Machine</a>
+</p>
+
+@code {
+    private List<Machine> machines = MachinesRepository.GetMachineByCity("Stockholm"); 
+   
+    private List<String> cities = CitiesRepository.GetCities();
+    private string selectedCity = "Stockholm";
+    private string _machineFilter = "";
+    private string machineFilter
+    {
+        get => _machineFilter;
+        set
+        {
+            _machineFilter = value;
+
+            // do whatever you want
+
+            this.machines = MachinesRepository.SearchMachines(_machineFilter);
+        }
+    }
+
+    private void DeleteMachine(int machineId)
+    {
+        if (machineId > 0)
+        {
+            MachinesRepository.DeleteMachine(machineId);
+            NavigationManager.NavigateTo("/machines");
+        }
+
+    }
+    //Event Handler
+    private void SelectCity(string cityName)
+    {
+        this.selectedCity = cityName;
+        this.machines = MachinesRepository.GetMachineByCity(this.selectedCity);
+    }
+
+    private void HandleSearch()
+    {
+        this.machines = MachinesRepository.SearchMachines(machineFilter);
+        this.selectedCity = string.Empty;
+    }
+   
+        
+}

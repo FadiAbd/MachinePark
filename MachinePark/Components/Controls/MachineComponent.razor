@@ -1,0 +1,29 @@
+﻿@inject NavigationManager NavigationManager
+
+
+
+@if (machine != null)
+{
+     <div data-name="@machine.Name"
+             data-status="Machine is @machine.City that is @(machine.IsOnline?"online":"offline")"
+             style="@($"color:{(machine.IsOnline? "green": "red")}")">
+            @machine.Name is in @machine.City that is @(machine.IsOnline ? "online" : "offline")
+            &nbsp;
+            <button type="submit" class="btn btn-primary" @onclick="ChangeStatus">Turn On/Off</button>
+     </div>
+   
+}
+
+
+@code {
+
+    private Machine? machine { get; set; } = new Machine { Name = "Machine1", City = "Stockholm" };
+    private void ChangeStatus()
+    {
+        if (machine != null)
+            this.machine.IsOnline = !this.machine.IsOnline;
+    }
+
+
+    
+}
